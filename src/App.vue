@@ -20,9 +20,12 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import AppSidebar from '@/components/AppSidebar.vue'
 import { Separator } from '@/components/ui/separator'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import Spinner from './components/ui/spinner/Spinner.vue'
 
 const md = markdownit()
 const userMsg = ref('')
+
+const isLoadingResponse = ref(false)
 
 const message = computed(() => {
   return { role: 'user', content: userMsg.value }
@@ -34,23 +37,34 @@ const chat = ref<any>([])
 const chatWithMd = ref<any>([])
 
 async function send() {
+  isLoadingResponse.value = true
   chat.value.push(message.value)
   chatWithMd.value.push(message.value)
   userMsg.value = ''
 
+  chatWithMd.value.push({ role: 'assistant', content: '' })
+  const assistantIdx = chatWithMd.value.length - 1
+  let accumlated = ''
   const response = await ollama.chat({
     model: 'gpt-oss:20b',
     messages: [...chat.value],
-    stream: false,
+    stream: true,
   })
-  chat.value.push(response.message)
-  const mdVal = md.render(response.message.content)
-  const responsewithMd = {
-    ...response.message,
-    content: mdVal,
+  for await (const part of response) {
+    accumlated += part.message.content
+    const mdPartial = md.render(accumlated)
+
+    chatWithMd.value[assistantIdx].content = mdPartial
+    isLoadingResponse.value = false
+    chat.value[chat.value.length - 1] = { role: 'assistant', content: accumlated }
+    console.log(mdPartial)
   }
-  chatWithMd.value.push(responsewithMd)
-  console.log(mdVal)
+  // const mdVal = md.render(response.message.content)
+  // const responsewithMd = {
+  //   ...response.message,
+  //   content: mdVal,
+  // }
+  // chatWithMd.value.push(responsewithMd)
 }
 
 function onEnterKey(e: KeyboardEvent) {
@@ -102,7 +116,8 @@ function onEnterKey(e: KeyboardEvent) {
                   {{ msg.content }}
                 </div>
                 <div v-else class="mx-auto prose lg:prose-lg">
-                  <div v-html="msg.content"></div>
+                  <Spinner v-if="isLoadingResponse && index === chatWithMd.length - 1" />
+                  <div v-else v-html="msg.content"></div>
                 </div>
               </div>
             </article>
