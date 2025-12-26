@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import type { LucideIcon } from 'lucide-vue-next'
-import { Folder, Forward, MoreHorizontal, Trash2 } from 'lucide-vue-next'
-
+import { Folder, MoreHorizontal, Trash2 } from 'lucide-vue-next'
+import { RouterLink } from 'vue-router'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,10 +19,9 @@ import {
 } from '@/components/ui/sidebar'
 
 defineProps<{
-  projects: {
-    name: string
-    url: string
-    icon: LucideIcon
+  chats: {
+    title: string
+    id: string
   }[]
 }>()
 
@@ -34,12 +32,11 @@ const { isMobile } = useSidebar()
   <SidebarGroup class="group-data-[collapsible=icon]:hidden">
     <SidebarGroupLabel>Your Chats</SidebarGroupLabel>
     <SidebarMenu>
-      <SidebarMenuItem v-for="item in projects" :key="item.name">
+      <SidebarMenuItem v-for="chat in chats" :key="chat.id">
         <SidebarMenuButton as-child>
-          <a :href="item.url">
-            <component :is="item.icon" />
-            <span>{{ item.name }}</span>
-          </a>
+          <RouterLink :to="'/' + chat.id">
+            <span>{{ chat.title }}</span>
+          </RouterLink>
         </SidebarMenuButton>
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
@@ -55,26 +52,22 @@ const { isMobile } = useSidebar()
           >
             <DropdownMenuItem>
               <Folder class="text-muted-foreground" />
-              <span>View Project</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Forward class="text-muted-foreground" />
-              <span>Share Project</span>
+              <span>View Chat</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <Trash2 class="text-muted-foreground" />
-              <span>Delete Project</span>
+              <span>Delete Chat</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
-      <SidebarMenuItem>
+      <!-- <SidebarMenuItem>
         <SidebarMenuButton class="text-sidebar-foreground/70">
           <MoreHorizontal class="text-sidebar-foreground/70" />
           <span>More</span>
         </SidebarMenuButton>
-      </SidebarMenuItem>
+      </SidebarMenuItem> -->
     </SidebarMenu>
   </SidebarGroup>
 </template>

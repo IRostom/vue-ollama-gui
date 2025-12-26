@@ -1,12 +1,17 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 
-export const useCounterStore = defineStore('counter', () => {
-  const count = ref(0)
-  const doubleCount = computed(() => count.value * 2)
-  function increment() {
-    count.value++
+interface Chat {
+  id: number
+  title: string
+}
+
+export const useCounterStore = defineStore('chats', () => {
+  const chats = ref<Chat[]>([])
+  // const doubleCount = computed(() => count.value * 2)
+  function updateChats(v: Chat[]) {
+    chats.value = v
   }
 
-  return { count, doubleCount, increment }
+  return { chats, updateChats }
 })
