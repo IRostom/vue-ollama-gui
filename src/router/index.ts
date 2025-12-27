@@ -2,8 +2,8 @@ import ChatView from '@/components/ChatView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
-  { path: '/', component: ChatView },
-  { path: '/:id', component: ChatView },
+  { path: '/', name: 'new-chat', component: ChatView },
+  { path: '/:id', name: 'chat', component: ChatView },
 ]
 
 const router = createRouter({

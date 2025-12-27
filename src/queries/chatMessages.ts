@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/vue-query'
 import type { ComputedRef, Ref } from 'vue'
+import { getConversation } from '@/api/chatService'
 
 export function useChatMessages(
   chatId: Ref<string | undefined> | ComputedRef<string | undefined>,
@@ -8,11 +9,10 @@ export function useChatMessages(
   const { isPending, isFetching, isError, data, error } = useQuery({
     queryKey: ['chat', chatId],
     queryFn: async () => {
-      const response = await fetch(`http://localhost:3000/conversations/${chatId.value}`)
-      if (!response.ok) {
-        throw new Error(`network response failed:${response.body}`)
+      if (!chatId.value) {
+        throw new Error('Chat ID is required')
       }
-      return response.json()
+      return getConversation(chatId.value)
     },
     enabled: () => {
       // Skip refetch if this is the conversationId we're programmatically navigating to

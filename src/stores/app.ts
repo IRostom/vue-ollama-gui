@@ -1,13 +1,8 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
-interface Chat {
-  id: number
-  title: string
-}
-
-export const useApolloStore = defineStore(
-  'apollo',
+export const useAppStore = defineStore(
+  'app',
   () => {
     const userSelectedModel = ref<string | undefined>(undefined)
 
@@ -21,3 +16,4 @@ export const useApolloStore = defineStore(
     persist: true,
   },
 )
+
