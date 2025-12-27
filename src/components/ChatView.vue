@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowUpIcon, PlusIcon } from 'lucide-vue-next'
+import { ArrowUpIcon, PlusIcon, ChevronDown } from 'lucide-vue-next'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,10 +18,17 @@ import Spinner from './ui/spinner/Spinner.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useChatMessages } from '@/queries/chatMessages'
 import { useChat } from '@/queries/chat'
+import { useModels } from '@/queries/models'
+import { useApolloStore } from '@/stores/apollo'
 
 const md = markdownit()
 const route = useRoute()
 const router = useRouter()
+const apollo = useApolloStore()
+
+const userSelectedModel = computed(() => apollo.userSelectedModel)
+
+const { data: models } = useModels()
 
 const conversationId = computed(() => {
   return route.params.id ? (route.params.id as string) : undefined
@@ -65,10 +72,6 @@ watch(chatHistoryServerWithMd, () => {
   chatWithMd.value = chatHistoryServerWithMd.value
 })
 
-watch(responseMd, () => {
-  console.log(responseMd)
-})
-
 const userMsg = ref('')
 
 const message = computed(() => {
@@ -87,7 +90,7 @@ async function send() {
   chat.value.push(message.value)
   chatWithMd.value.push(message.value)
   sendMsg({
-    model: 'gemma3:4b',
+    model: userSelectedModel.value!,
     message: { content: userMsg.value, role: 'user' },
   })
   userMsg.value = ''
@@ -103,6 +106,10 @@ function onEnterKey(e: KeyboardEvent) {
 
   // Submit whatever is in `text`
   send()
+}
+
+function updateSelectedModel(model: string) {
+  apollo.updateUserSelectedModel(model)
 }
 </script>
 
@@ -146,12 +153,18 @@ function onEnterKey(e: KeyboardEvent) {
         </InputGroupButton>
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
-            <InputGroupButton variant="ghost"> Auto </InputGroupButton>
+            <InputGroupButton variant="ghost">
+              {{ userSelectedModel ?? 'Select Model' }}
+              <ChevronDown />
+            </InputGroupButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="start" class="[--radius:0.95rem]">
-            <DropdownMenuItem>Auto</DropdownMenuItem>
-            <DropdownMenuItem>Agent</DropdownMenuItem>
-            <DropdownMenuItem>Manual</DropdownMenuItem>
+            <DropdownMenuItem
+              v-for="model in models"
+              :key="model.name"
+              @click="updateSelectedModel(model.name)"
+              >{{ model.name }}</DropdownMenuItem
+            >
           </DropdownMenuContent>
         </DropdownMenu>
         <!-- <InputGroupText class="ml-auto"> 52% used </InputGroupText> -->
@@ -161,7 +174,7 @@ function onEnterKey(e: KeyboardEvent) {
           class="rounded-full ml-auto"
           size="icon-xs"
           @click="send()"
-          :disabled="isStreaming"
+          :disabled="isStreaming || !userSelectedModel?.length"
         >
           <ArrowUpIcon class="size-4" />
           <span class="sr-only">Send</span>

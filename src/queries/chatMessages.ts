@@ -3,10 +3,10 @@ import type { ComputedRef, Ref } from 'vue'
 
 export function useChatMessages(
   chatId: Ref<string | undefined> | ComputedRef<string | undefined>,
-  skipRefetchForId?: Ref<string | undefined>
+  skipRefetchForId?: Ref<string | undefined>,
 ) {
   const { isPending, isFetching, isError, data, error } = useQuery({
-    queryKey: ['chats', chatId],
+    queryKey: ['chat', chatId],
     queryFn: async () => {
       const response = await fetch(`http://localhost:3000/conversations/${chatId.value}`)
       if (!response.ok) {
