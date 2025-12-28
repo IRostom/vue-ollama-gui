@@ -3,7 +3,7 @@ import type { ChatMessage } from '@/types/chat'
 import { computed } from 'vue'
 import Spinner from '@/components/ui/spinner/Spinner.vue'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { ChevronDown, ChevronUp } from 'lucide-vue-next'
+import { ChevronDown, ChevronUp, Globe } from 'lucide-vue-next'
 
 interface Props {
   message: ChatMessage
@@ -60,7 +60,10 @@ const toolResult = computed(() => {
   <div v-else-if="isTool" class="mx-auto prose lg:prose-lg flex flex-col">
     <Collapsible v-if="message.content?.length" class="border rounded-lg" v-slot="{ open }">
       <CollapsibleTrigger class="py-2 px-3 cursor-pointer w-full text-start flex items-center">
-        {{ message.toolName }}
+        <div class="flex items-center gap-2">
+          <Globe class="h-4 w-4" v-if="message.toolName === 'webSearch'" />
+          {{ message.toolName }}
+        </div>
         <ChevronDown v-if="!open" class="ml-auto" />
         <ChevronUp v-if="open" class="ml-auto" />
       </CollapsibleTrigger>
