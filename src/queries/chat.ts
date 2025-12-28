@@ -1,47 +1,93 @@
-import { ref, type Ref } from 'vue'
+import { computed, ref, type Ref } from 'vue'
 import { sendMessage } from '@/api/chatService'
-import type { SendMessageOptions, StreamFrame } from '@/types/chat'
+import type { ChatMessage, SendMessageOptions, StreamFrame } from '@/types/chat'
+import { useAppStore } from '@/stores/app'
 
 export function useChat(conversationId: Ref<string | undefined>) {
   const isStreaming: Ref<boolean> = ref(false)
-  const response: Ref<string> = ref('')
+  const isThinking: Ref<boolean> = ref(false)
   const newConversationId: Ref<string> = ref('')
+  const messages: Ref<ChatMessage[]> = ref([])
+  const currIndex = computed(() => messages.value.length - 1)
 
   const send = async (options: SendMessageOptions) => {
-    const { model, message } = options
+    const { model, message, think, webTools } = options
 
-    // Reset state
     isStreaming.value = true
-    response.value = ''
-
+    // push user message
+    messages.value.push(message)
     try {
       await sendMessage(
         {
           model,
           message,
-          conversationId: conversationId?.value || undefined,
+          conversationId: conversationId?.value,
+          think,
+          webTools,
         },
         (frame: StreamFrame) => {
           switch (frame.type) {
             case 'start':
               // Stream started
+              isStreaming.value = true
               break
 
-            case 'meta':
+            case 'role':
+              // push placeholder for new message
+              if (frame.value) {
+                messages.value.push({
+                  role: frame.value.toString() as ChatMessage['role'],
+                  content: '',
+                  thinking: '',
+                })
+              }
+              break
+
+            case 'isThinking':
+              if (
+                frame.value !== undefined &&
+                frame.value !== null &&
+                typeof frame.value === 'boolean'
+              ) {
+                isThinking.value = frame.value
+              }
+              break
+
+            case 'thinking':
+              if (frame.value) {
+                messages.value[currIndex.value]!.thinking =
+                  messages.value[currIndex.value]!.thinking! + frame.value
+              }
+              break
+
+            case 'conversationId':
               // Update conversationId from server response
-              if (frame.conversationId) {
-                newConversationId.value = frame.conversationId
+              if (frame.value) {
+                newConversationId.value = frame.value.toString()
               }
               break
 
             case 'token':
               // Accumulate tokens
               if (frame.value) {
-                response.value += frame.value
+                // response.value += frame.value
+                messages.value[currIndex.value]!.content += frame.value
               }
               break
 
-            case 'done':
+            case 'toolName':
+              if (frame.value) {
+                messages.value[currIndex.value]!.toolName = frame.value as string
+              }
+              break
+
+            case 'toolValue':
+              if (frame.value) {
+                messages.value[currIndex.value]!.content = frame.value as string
+              }
+              break
+
+            case 'end':
               // Stream completed
               isStreaming.value = false
               break
@@ -63,10 +109,15 @@ export function useChat(conversationId: Ref<string | undefined>) {
     }
   }
 
+  const resetMessages = () => {
+    messages.value = []
+  }
+
   return {
     isStreaming,
-    response,
     newConversationId,
     send,
+    messages,
+    resetMessages,
   }
 }

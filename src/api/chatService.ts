@@ -6,6 +6,7 @@
 import { getApiUrl, API_CONFIG } from '@/config/api'
 import type {
   ChatMessage,
+  ChatMessageServer,
   Conversation,
   Model,
   SendMessageOptions,
@@ -24,7 +25,7 @@ export async function sendMessage(
   options: SendMessageOptions,
   onFrame: StreamHandler,
 ): Promise<void> {
-  const { model, message, conversationId } = options
+  const { model, message, conversationId, webTools, think } = options
 
   const response = await fetch(getApiUrl(API_CONFIG.endpoints.chat.stream), {
     method: 'POST',
@@ -35,6 +36,8 @@ export async function sendMessage(
       model,
       message,
       conversationId: conversationId || undefined,
+      webTools,
+      think,
     }),
   })
 
@@ -97,7 +100,15 @@ export async function getConversation(id: string): Promise<ChatMessage[]> {
     throw new Error(`network response failed: ${response.statusText}`)
   }
 
-  return response.json()
+  const json: ChatMessageServer[] = await response.json()
+  const mapped = json.map((m) => {
+    return {
+      ...m,
+      toolName: m.tool_name,
+    }
+  })
+
+  return mapped
 }
 
 /**

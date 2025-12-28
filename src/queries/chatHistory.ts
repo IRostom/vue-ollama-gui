@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/vue-query'
 import type { ComputedRef, Ref } from 'vue'
 import { getConversation } from '@/api/chatService'
 
-export function useChatMessages(
+export function useChatHistory(
   chatId: Ref<string | undefined> | ComputedRef<string | undefined>,
   skipRefetchForId?: Ref<string | undefined>,
 ) {

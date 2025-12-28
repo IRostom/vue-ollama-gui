@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowUpIcon, PlusIcon, ChevronDown } from 'lucide-vue-next'
+import { ArrowUpIcon, PlusIcon, ChevronDown, Brain, Globe } from 'lucide-vue-next'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,10 +12,10 @@ import {
   InputGroupButton,
   InputGroupTextarea,
 } from '@/components/ui/input-group'
+import { Toggle } from '@/components/ui/toggle'
 import { ref, computed } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useModels } from '@/queries/models'
-import type { Model } from '@/types/chat'
 
 interface Props {
   disabled?: boolean
@@ -73,34 +73,54 @@ function updateSelectedModel(model: string) {
         <InputGroupButton variant="outline" class="rounded-full" size="icon-xs">
           <PlusIcon class="size-4" />
         </InputGroupButton>
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <InputGroupButton variant="ghost">
-              {{ userSelectedModel ?? 'Select Model' }}
-              <ChevronDown />
-            </InputGroupButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="start" class="[--radius:0.95rem]">
-            <DropdownMenuItem
-              v-for="model in models"
-              :key="model.name"
-              @click="updateSelectedModel(model.name)"
-              >{{ model.name }}</DropdownMenuItem
-            >
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <InputGroupButton
-          variant="default"
-          class="rounded-full ml-auto"
-          size="icon-xs"
-          @click="send()"
-          :disabled="disabled || !userSelectedModel?.length"
+        <Toggle
+          size="sm"
+          :modelValue="appStore.shouldThink"
+          @update:modelValue="appStore.updateShouldThink"
+          aria-label="Toggle think"
         >
-          <ArrowUpIcon class="size-4" />
-          <span class="sr-only">Send</span>
-        </InputGroupButton>
+          <Brain class="h-4 w-4" />
+          Think
+        </Toggle>
+        <Toggle
+          size="sm"
+          :modelValue="appStore.useWebTools"
+          @update:modelValue="appStore.updateUseWebTools"
+          aria-label="Toggle think"
+        >
+          <Globe class="h-4 w-4" />
+          Search
+        </Toggle>
+        <div class="ml-auto flex gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <InputGroupButton variant="ghost">
+                {{ userSelectedModel ?? 'Select Model' }}
+                <ChevronDown />
+              </InputGroupButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="top" align="start" class="[--radius:0.95rem]">
+              <DropdownMenuItem
+                v-for="model in models"
+                :key="model.name"
+                @click="updateSelectedModel(model.name)"
+                >{{ model.name }}</DropdownMenuItem
+              >
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <InputGroupButton
+            variant="default"
+            class="rounded-full ml-auto"
+            size="icon-xs"
+            @click="send()"
+            :disabled="disabled || !userSelectedModel?.length"
+          >
+            <ArrowUpIcon class="size-4" />
+            <span class="sr-only">Send</span>
+          </InputGroupButton>
+        </div>
       </InputGroupAddon>
     </InputGroup>
   </div>
 </template>
-

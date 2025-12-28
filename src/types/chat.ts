@@ -2,10 +2,21 @@
  * Chat-related type definitions
  */
 
-export interface ChatMessage {
-  role: 'user' | 'assistant' | 'system'
+export interface ChatMessageServer {
+  role: 'user' | 'assistant' | 'system' | 'tool'
   content: string
   id?: number
+  thinking?: string
+  tool_name?: string
+  tool_calls?: string
+}
+
+export interface ChatMessage {
+  role: 'user' | 'assistant' | 'system' | 'tool'
+  content: string
+  id?: number
+  thinking?: string
+  toolName?: string
 }
 
 export interface Conversation {
@@ -23,12 +34,21 @@ export interface Model {
   modified_at?: string
 }
 
-export type StreamFrameType = 'start' | 'meta' | 'token' | 'done' | 'error'
+export type StreamFrameType =
+  | 'start'
+  | 'conversationId'
+  | 'token'
+  | 'end'
+  | 'error'
+  | 'toolName'
+  | 'toolValue'
+  | 'thinking'
+  | 'isThinking'
+  | 'role'
 
 export interface StreamFrame {
   type: StreamFrameType
-  value?: string
-  conversationId?: string
+  value?: string | boolean
   message?: string
 }
 
@@ -36,4 +56,6 @@ export interface SendMessageOptions {
   model: string
   message: ChatMessage
   conversationId?: string
+  think?: boolean
+  webTools?: boolean
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SidebarProps } from '@/components/ui/sidebar'
 
-import { Brain, SquarePen } from 'lucide-vue-next'
+import { Sparkle, SquarePen } from 'lucide-vue-next'
 import NavMain from '@/components/NavMain.vue'
 import NavChats from '@/components/NavChats.vue'
 import {
@@ -48,7 +48,7 @@ const data = {
         <SidebarMenuItem>
           <SidebarMenuButton as-child class="data-[slot=sidebar-menu-button]:p-1.5!">
             <RouterLink to="/">
-              <Brain class="size-5!" />
+              <Sparkle class="size-5!" />
               <span class="text-base font-semibold">Apollo</span>
             </RouterLink>
           </SidebarMenuButton>
